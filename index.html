@@ -1,0 +1,560 @@
+
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-108829575-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'UA-108829575-1');
+    </script>
+
+    <style>
+        #listedCenters,
+        #availabeCenters,
+        #txtAlertCenters,
+        body {
+            font-size: 24px;
+        }
+
+        .centerBox {
+            border: 1px solid black;
+            width: 308px;
+            display: inline-block;
+        }
+
+        #txtAlertCenters {
+            width: 88%;
+        }
+
+        #selectDistrict,
+        #selectAge {
+            font-size: 27px;
+        }
+
+        #lblRefreshSecond {
+            position: fixed;
+            right: 32px;
+            font-size: 93px;
+            top: -98px;
+            opacity: 0.5;
+            display: none;
+        }
+
+        #refreshBar {
+            width: 96%;
+            height: 36px;
+            margin: 0 auto;
+            border-radius: 9px;
+            margin-top: 17px;
+        }
+
+        #prgressBar {
+            width: 100%;
+            height: 36px;
+            background: rgb(226,246,218);
+            background: linear-gradient(90deg, rgba(226,246,218,1) 0%, rgba(196,233,206,1) 53%, rgba(194,238,247,1) 100%);
+            border-radius: 9px;
+        }
+
+        .availabeCenters, .alertCenters, .historyCenters {
+            padding: 8px;
+            height: 200px;
+            vertical-align: bottom;
+            margin-right: 15px;
+        }
+
+        .copyButton {
+            width: 90%;
+            height: 30px;
+        }
+
+        #historyAlertCenters, #alertCenters, #availabeCenters {
+            text-align: center;
+        }
+
+        /*////////////////////////////////////////////////*/
+        #wrapper {
+            width: 100%;
+            height: 100%;
+            overflow-y: scroll;
+        }
+
+        #content {
+            position: relative;
+            left: 1%;
+            width: 73%;
+        }
+
+        #sidebar {
+            position: absolute;
+            top: 0;
+            right: 0%;
+            margin-left: 10px;
+            width: 347px;
+            max-height: 100%;
+            overflow: hidden;
+        }
+
+            #sidebar:hover {
+                overflow-y: auto;
+            }
+
+            #sidebar > * {
+                max-width: 225px; /* leave some space for vertical scrollbar */
+            }
+
+        .eighteenPlusAvailable {
+            background-color: #add9ff;
+        }
+
+        .grayBox {
+            background-color: lightgray;
+        }
+    </style>
+</head>
+<body>
+    <div id="wrapper">
+        <div id="content">
+
+            <h3 id="lblRefreshSecond">Refresh Counter</h3>
+            <span>District :</span>
+            <select id="selectDistrict" onchange="DrpChange()">
+                <option value="301">Alappuzha</option>
+                <option value="307">Ernakulam</option>
+                <option value="306">Idukki</option>
+                <option value="297">Kannur</option>
+                <option value="295">Kasargod</option>
+                <option value="298">Kollam</option>
+                <option value="304">Kottayam</option>
+                <option value="305">Kozikode</option>
+                <option value="302">Malappuram</option>
+                <option value="308">Palakkad</option>
+                <option value="300">Pathanamthitta</option>
+                <option value="296">Trivandrum</option>
+                <option value="303">Thrissur</option>
+                <option value="299">Waynad</option>
+                <option value="276">Bangalore R</option>
+                <option value="265">Bangalore U</option>
+                <option value="446">Khurda (Odisha)</option>
+                <option value="270">Bagalkot (Karnataka)</option>
+            </select>
+            <br />  <br />
+            <span>Age :</span>
+            <select id="selectAge" onchange="DrpChange()">
+                <option value="0">ALL</option>
+                <option value="45">45+</option>
+                <option value="18">18+</option>
+            </select>
+            &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+            <input type="checkbox" id="chkExcludeTodays" /> Exclude today's slots (Only next 6 days)
+
+            <br /> <br />
+            <input type="radio" id="vaccineAll" name="vaccine" value="ALL" checked>
+            <label for="vaccineAll">ALL</label>
+            <input type="radio" id="covaxine" name="vaccine" value="COVAXIN">
+            <label for="COVAXIN">COVAXIN</label>
+
+            <input type="radio" id="covishield" name="vaccine" value="COVISHIELD">
+            <label for="COVISHIELD">COVISHIELD</label>
+
+            <br />
+
+            <br />
+            <input type="radio" id="onlyAlert" name="type" value="onlyAlert">
+            <label for="onlyAlert">Alert only for Alert Centers</label><br>
+
+            <input type="radio" id="allAlert" name="type" value="allAlert" checked>
+            <label for="allAlert">Alert if at least one Vaccination center is available</label><br>
+
+            <br />
+            <span><b>Alert Centers :</b></span>
+            <input type="text" id="txtAlertCenters" disabled="disabled" /><br />
+            <span>Enter alert center names separated with commas (Example: Ambalappuzha, Arroor, Mavelikkara)</span> <br />
+            <span>You will get a notification beep if the system finds vaccine availability in Alert Centers</span>
+
+            <br />
+            <div id='refreshBar'>
+                <div id='prgressBar'></div>
+            </div>
+
+            <br />
+            <a href="https://selfregistration.cowin.gov.in/" target="_blank">Book Appointment</a>
+            <hr />
+            <h2 id="availableCenterHead">Vaccine Available Centers</h2>
+            <div id="availabeCenters">
+            </div>
+            <br />
+            <hr />
+            <h2 id="alertCentersHead">Alert Centers</h2>
+            <div id="alertCenters">
+            </div>
+
+            <br />
+            <hr />
+            <h2>History</h2>
+            <div id="historyAlertCenters">
+            </div>
+            <br />
+            <br />
+            <hr />
+        </div>
+    </div>
+    <div id="sidebar">
+        <h2 id="centersH2">Centers</h2>
+        <div id="listedCenters">
+        </div>
+    </div>
+    <script>
+
+        var intervalTimeInSecond = 10;
+        var docWidth = $(document).width();
+        //var AlertCenters = "Haripad, Karuvatta, Thottappally, Karthikappally, Cheppad, Thrikkunnapuzha";
+        //var AlertCenters = "Haripad, Mannar";
+
+        var snd = new Audio("data:audio/wav;base64,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qJrx4KOQjahZxWbcZgztj2c49nKmkId44S71j0c8eV9yDK6uPRzx5X18eDvjvQ6yKo9ZSS6l//8elePK/Lf//IInrOF/FvDoADYAGBMGb7FtErm5MXMlmPAJQVgWta7Zx2go+8xJ0UiCb8LHHdftWyLJE0QIAIsI+UbXu67dZMjmgDGCGl1H+vpF4NSDckSIkk7Vd+sxEhBQMRU8j/12UIRhzSaUdQ+rQU5kGeFxm+hb1oh6pWWmv3uvmReDl0UnvtapVaIzo1jZbf/pD6ElLqSX+rUmOQNpJFa/r+sa4e/pBlAABoAAAAA3CUgShLdGIxsY7AUABPRrgCABdDuQ5GC7DqPQCgbbJUAoRSUj+NIEig0YfyWUho1VBBBA//uQZB4ABZx5zfMakeAAAAmwAAAAF5F3P0w9GtAAACfAAAAAwLhMDmAYWMgVEG1U0FIGCBgXBXAtfMH10000EEEEEECUBYln03TTTdNBDZopopYvrTTdNa325mImNg3TTPV9q3pmY0xoO6bv3r00y+IDGid/9aaaZTGMuj9mpu9Mpio1dXrr5HERTZSmqU36A3CumzN/9Robv/Xx4v9ijkSRSNLQhAWumap82WRSBUqXStV/YcS+XVLnSS+WLDroqArFkMEsAS+eWmrUzrO0oEmE40RlMZ5+ODIkAyKAGUwZ3mVKmcamcJnMW26MRPgUw6j+LkhyHGVGYjSUUKNpuJUQoOIAyDvEyG8S5yfK6dhZc0Tx1KI/gviKL6qvvFs1+bWtaz58uUNnryq6kt5RzOCkPWlVqVX2a/EEBUdU1KrXLf40GoiiFXK///qpoiDXrOgqDR38JB0bw7SoL+ZB9o1RCkQjQ2CBYZKd/+VJxZRRZlqSkKiws0WFxUyCwsKiMy7hUVFhIaCrNQsKkTIsLivwKKigsj8XYlwt/WKi2N4d//uQRCSAAjURNIHpMZBGYiaQPSYyAAABLAAAAAAAACWAAAAApUF/Mg+0aohSIRobBAsMlO//Kk4soosy1JSFRYWaLC4qZBYWFRGZdwqKiwkNBVmoWFSJkWFxX4FFRQWR+LsS4W/rFRb/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////VEFHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAU291bmRib3kuZGUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMjAwNGh0dHA6Ly93d3cuc291bmRib3kuZGUAAAAAAAAAACU=");
+        function beep() {
+            snd.play();
+        }
+        /*  beep();*/
+
+        var LastJsonResponse = null;
+        var progressBarWidth = 100;
+        var oneProgressBarMove = 100 / intervalTimeInSecond;
+        var counter = intervalTimeInSecond;
+
+        $(document).ready(function () {
+
+            var rightBarWidth = $('#sidebar').width();
+            var contentWidth = docWidth - rightBarWidth - 60;
+            $('#content').css('width', contentWidth + 'px');
+
+            //setTimeout(function () {
+            //    $('#prgressBar').animate({ 'width': 0 + '%' }, (intervalTimeInSecond * 1000));
+            //}, 1000);
+
+            //Send first request
+            SendApiRequest();
+
+            //Send interval request
+            setInterval(function () {
+
+                //Adjust div size on every cycle
+                docWidth = $(document).width();
+                var contentWidth = docWidth - rightBarWidth - 60;
+                $('#content').css('width', contentWidth + 'px');
+
+                if (counter < 0) {
+                    //$('#prgressBar').animate({ 'width': 100 + '%' }, 5);
+                    counter = intervalTimeInSecond;
+                    progressBarWidth = 100;
+                    $('#prgressBar').css('width', 100 + '%');
+                    SendApiRequest();
+                    //$('#prgressBar').animate({ 'width': 0 + '%' }, (intervalTimeInSecond * 1000));
+                }
+                $('#prgressBar').animate({ 'width': progressBarWidth + '%' }, 800);
+                progressBarWidth = progressBarWidth - oneProgressBarMove;
+                $('#lblRefreshSecond').text(counter);
+                $(document).prop('title', "Refresh In: " + counter);
+                counter--;
+
+            }, (1000 * 1));
+
+            //Radio button change event
+            $('input[type=radio][name=type]').change(function () {
+                if (this.value == 'onlyAlert') {
+                    //$("#txtAlertCenters").val(AlertCenters);
+                    $("#txtAlertCenters").prop("disabled", false);
+                }
+                else if (this.value == 'allAlert') {
+                    //$("#txtAlertCenters").val("");
+                    $("#txtAlertCenters").prop("disabled", true);
+                }
+            });
+
+            $('input[type=radio][name=vaccine]').change(function () {
+                DrpChange();
+            });
+
+            $('#chkExcludeTodays').change(function () {
+                DrpChange();
+            });
+        });
+
+        function DrpChange() {
+            counter = intervalTimeInSecond;
+            progressBarWidth = 100;
+            $('#historyAlertCenters').html('');
+            SendApiRequest();
+        }
+
+        var LastSecondRequest = null;
+        function SendApiRequest(fromDate) {
+
+
+            var district = $('#selectDistrict').val(); //Alappy
+            //var district = 301; //Alappy
+            //var district = 276;//Beng Rural
+            var dateFrom = GetTodaysDate();
+            if (fromDate != null) {
+                dateFrom = fromDate;
+            }
+
+            var isSecondRequest = fromDate;
+
+
+            if (LastSecondRequest != null && !isSecondRequest) {
+                clearTimeout(LastSecondRequest);
+            }
+
+
+            $.ajax({
+                url: "https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByDistrict?district_id=" + district + "&date=" + dateFrom,
+                type: "GET",
+                success: function (response) {
+                    LastJsonResponse = response;
+                    IterateResponse(isSecondRequest);
+
+                    //Send second request
+                    if (!isSecondRequest) {
+                        LastSecondRequest = setTimeout(function () {
+                            var dtFromLocal = dateFrom;
+                            //Fetch the next week data
+                            dateFrom = GetTodaysDate(7);
+                            SendApiRequest(dateFrom);
+                        }, 5000);
+                    }
+                    
+                },
+                error: function (error) {
+                    if (!isSecondRequest) {
+                        console.log("Request error");
+                        $('#listedCenters').html('');
+                        $('#availabeCenters').html('');
+                        $('#alertCenters').html('');
+                        $('#listedCenters').append('<div class="centerBox" /> API Error </div>').hide().show('normal');
+                        $('#listedCenters').append('<div class="centerBox" /> Please Wait.. </div>').hide().show('normal');
+                    } else {
+                        $('#listedCenters').append('<div class="centerBox listCenters" /> ----ER----- </div>');
+                    }
+                   
+                }
+            });
+        }
+
+        var IsAlertActive = false;
+        var BeepAlert = null;
+        function IterateResponse(isSecondRequest) {
+
+            if (!isSecondRequest) {
+                $('#listedCenters').html('');
+                $('#availabeCenters').html('');
+                $('#alertCenters').html('');
+            }
+            else {
+                $('#listedCenters').append('<div class="centerBox listCenters grayBox" /> --NEXT WEEK-- </div>');
+            }
+          
+
+            var age = $('#selectAge').val();
+            var vaccine = $('input[type=radio][name=vaccine]:checked').val();
+            var excludeTodaysSlots = $("#chkExcludeTodays").is(":checked");
+            var todaysDate = GetTodaysDate();
+
+            var isAnyAlertCenterFound = false;
+            $(LastJsonResponse.centers.sort(SortCenterName("name"))).each(function (centerIndex, centerElement) {
+
+                var center = centerElement;
+                var centerName = center.name;
+                var picCode = center.pincode;
+
+                var breakTheCenterLoop = false;
+                var is18PlusSlotFound = false;
+                $(center.sessions).each(function (sessionIndex1, sessionElement1) {
+                    var sessions = sessionElement1;
+                    var ageLimit = sessions.min_age_limit;
+                    var centerVaccine = sessions.vaccine;
+                    var date = sessions.date;
+
+                    if (
+                        (age == 0 || ageLimit == age) &&
+                        !breakTheCenterLoop &&
+                        (vaccine == "ALL" || vaccine == centerVaccine) &&
+                        (!excludeTodaysSlots || date != todaysDate)
+                    ) {
+                        breakTheCenterLoop = true;
+                    }
+
+                    if (ageLimit == 18) {
+                        is18PlusSlotFound = true;
+                    }
+
+                });
+
+                if (breakTheCenterLoop) {
+                    var textToAppend = '<div class="centerBox listCenters ' + (is18PlusSlotFound ? "eighteenPlusAvailable" : "") + '" /> ' +
+                        centerName + (is18PlusSlotFound ? "<br/>( 18+ Available )" : "") + '</div>';
+
+                    if (isSecondRequest) {
+                        $('#listedCenters').append(textToAppend);
+                    } else {
+                        $('#listedCenters').append(textToAppend).hide().show('normal');
+                    }
+
+                }
+
+                $(center.sessions).each(function (sessionIndex, sessionElement) {
+                    var sessions = sessionElement;
+                    var availableVaccine = sessions.available_capacity;
+                    var ageLimit = sessions.min_age_limit;
+                    var centerVaccine = sessions.vaccine;
+                    var date = sessions.date;
+
+                    if (availableVaccine > 0 &&
+                        (age == 0 || ageLimit == age) &&
+                        (vaccine == "ALL" || vaccine == centerVaccine) &&
+                        (!excludeTodaysSlots || date != todaysDate)
+                    ) {
+                        var ageLimitClassAv = "";
+                        if (ageLimit == 18) ageLimitClassAv = " ageLimitClass";
+
+                        AppendTextToBox('availabeCenters', 'availabeCenters' + ageLimitClassAv, centerName, availableVaccine, date, picCode, centerVaccine, ageLimit, isSecondRequest);
+
+                        console.log(centerName + " =>  " + availableVaccine);
+
+                        AlertCenters = $("#txtAlertCenters").val();
+                        var alertCenterArray = AlertCenters.split(',');
+
+                        if ($(alertCenterArray).length > 0) {
+
+                        }
+                        var alertForAllSelected = $('#allAlert').is(":checked");
+
+                        //If alert all not checked
+                        if (!alertForAllSelected) {
+                            $(alertCenterArray).each(function (alertIndex, alertItem) {
+
+                                var centerNameUpper = centerName.trim().toUpperCase();
+                                var alertItemUpper = alertItem.trim().toUpperCase();
+
+                                if (centerNameUpper.includes(alertItemUpper)) {
+                                    isAnyAlertCenterFound = true;
+
+                                    var ageLimitClass = "";
+                                    if (ageLimit == 18) ageLimitClass = " ageLimitClass";
+                                    
+
+                                    AppendTextToBox('alertCenters', 'alertCenters' + ageLimitClass, centerName, availableVaccine, date, picCode, centerVaccine, ageLimit, isSecondRequest);
+                                    AppendTextToBox('historyAlertCenters', 'historyCenters', centerName, availableVaccine, date, picCode, centerVaccine, ageLimit, isSecondRequest);
+
+                                }
+                            });
+                        } else {
+                            isAnyAlertCenterFound = true;
+
+                            var ageLimitClass = "";
+                            if (ageLimit == 18) ageLimitClass = " ageLimitClass";
+
+                            AppendTextToBox('alertCenters', 'alertCenters' + ageLimitClass, centerName, availableVaccine, date, picCode, centerVaccine, ageLimit, isSecondRequest);
+                            AppendTextToBox('historyAlertCenters', 'historyCenters', centerName, availableVaccine, date, picCode, centerVaccine, ageLimit, isSecondRequest);
+
+                        }
+
+                        beep();
+                    }
+
+                });
+            });
+
+            var isAny18PlusCenterAvailableInState = $(".listCenters.eighteenPlusAvailable").length > 0;
+            var listCenterCount = $(".listCenters").length;
+
+            if (isSecondRequest) {
+                listCenterCount = listCenterCount - 1;
+            }
+
+            $("#centersH2").html("Centers => " + listCenterCount + (isAny18PlusCenterAvailableInState?"<br/>18+ Available":""));
+
+            var availableCenterCount = $(".availabeCenters").length;
+            $("#availableCenterHead").html("Vaccine Available Centers => " + availableCenterCount);
+
+            var alertCentersHead = $(".alertCenters").length;
+            $("#alertCentersHead").html("Alert Centers => " + alertCentersHead);
+
+
+
+            //If any alert center already found
+            if (isAnyAlertCenterFound) {
+                //Start the alarm if it is running
+                if (!IsAlertActive) {
+                    BeepAlert = setInterval(function () {
+                        beep();
+                    },
+                        (500 * 1));
+                    IsAlertActive = true;
+                }
+            } else {
+                //If there is no alarm center, but the alaram is active
+                if (IsAlertActive) {
+                    IsAlertActive = false;
+                    clearInterval(BeepAlert);
+                }
+            }
+        }
+
+        function AppendTextToBox(boxId, className, centerName, availableVaccine, date, picCode, vaccineName, age, isSecondRequest) {
+
+            var appendText = '<div class="centerBox ' + className + '" /> ' + centerName + "<br /> " +
+                vaccineName + ' => ' +
+                availableVaccine + '<br />' +
+                "Age Limit: " + age + '<br />' +
+                date + '<br />Pin: ' + picCode +
+                '<br /><button class="copyButton" onClick="CopyToClipBoard(\'' + picCode + '\',this)" >Copy Pin Code</button></div>';
+
+            if (isSecondRequest) {
+                $('#' + boxId).append(appendText);
+            } else {
+                $('#' + boxId).append(appendText).hide().show('normal');
+            }
+
+        }
+
+        function GetTodaysDate(daysToAdd) {
+            var actualDate = new Date();
+
+            if (daysToAdd != null) {
+                actualDate.setDate(new Date().getDate() + daysToAdd);
+            }
+            var dd = (actualDate.getDate());
+            var mm = (actualDate.getMonth() + 1);
+            var y = actualDate.getFullYear();
+            return (dd < 10 ? ('0' + dd) : dd) + '-0' + mm + '-' + y;
+        }
+
+        function SortCenterName(prop) {
+            return function (a, b) {
+                if (a[prop] > b[prop]) {
+                    return 1;
+                } else if (a[prop] < b[prop]) {
+                    return -1;
+                }
+                return 0;
+            }
+        }
+
+        function CopyToClipBoard(text, currentDiv) {
+            var $temp = $("<div>");
+            $(currentDiv).append($temp);
+            $temp.attr("contenteditable", true)
+                .html(text).select()
+                .on("focus", function () { document.execCommand('selectAll', false, null); })
+                .focus();
+            document.execCommand("copy");
+            $temp.remove();
+        }
+    </script>
+</body>
+</html>
